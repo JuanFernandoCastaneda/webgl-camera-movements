@@ -17,31 +17,14 @@ var angleX = 0;
 var angleY = 0;
 var angleZ = 0;
 
-const redRanger = document.getElementById('redRange');
-redRanger.addEventListener('input', (event) => {
-    cakeRed = event.target.value
-});
-
-const greenRanger = document.getElementById('greenRange');
-greenRanger.addEventListener('input', (event) => {
-    cakeGreen = event.target.value
-});
-
-const blueRanger = document.getElementById('blueRange');
-blueRanger.addEventListener('input', (event) => {
-    cakeBlue = event.target.value
-});
-
 const xRanger = document.getElementById('xRange');
 xRanger.addEventListener('input', (event) => {
     cakeX = parseInt(event.target.value)
-    console.log(cakeX)
 });
 
 const yRanger = document.getElementById('yRange');
 yRanger.addEventListener('input', (event) => {
     cakeY = event.target.value
-    console.log(cakeY)
 });
 
 const zRanger = document.getElementById('zRange');
@@ -52,19 +35,16 @@ zRanger.addEventListener('input', (event) => {
 const xAngle = document.getElementById('xAngle');
 xAngle.addEventListener('input', (event) => {
     angleX = parseFloat(event.target.value)
-    console.log(angleX);
 });
 
 const yAngle = document.getElementById('yAngle');
 yAngle.addEventListener('input', (event) => {
     angleY = parseFloat(event.target.value)
-    console.log(angleY);
 });
 
 const zAngle = document.getElementById('zAngle');
 zAngle.addEventListener('input', (event) => {
     angleZ = parseFloat(event.target.value)
-    console.log(angleZ);
 });
 
 function reiniciarAngulo () {
@@ -260,13 +240,29 @@ function main() {
         period = performance.now() / 1000 / 40 * 2 * Math.PI;
 
         // Operating the matrix viewMatrix = mat4.lookAt(mat4.create(), [0, -2, 8], [0, 0, 0], [0, -1, 0]);vito rotate in the period, by the y axis.
-        console.log([0, -1, angleX*Math.PI])
         viewMatrix = mat4.lookAt(mat4.create(), [0-cakeX, -2-cakeY, 8-cakeZ], 
             // Pan es cambiando hacia donde mira el X.
             // Tilt es cambiando hacia donde mira el Y.
             // Cent es cambiando el up.
-            [0-cakeX-angleY, -1.6-cakeY-angleX*Math.PI, 0-cakeZ], 
-            [-angleZ*Math.PI, -1, 0]);
+            // Cuando se hace Tilt, toca cambiar la mirada de la cámara hacia arriba,
+            // pero de forma similar hay que reducir z en cierta cantidad absoluta, para
+            // poder completar un diagrama así:
+            /*
+            (arriba)
+                            -
+                        -
+                    -
+                -
+            -
+            (ojo)                (atrás)
+                                
+            El problema es que como la cámara está a una distancia de 2, toca reducir el 
+            cambio en z de Tilt a 7.9 para que no mire el lado contrario del piso.
+            
+            Lo mismo pasa con el Pan, toca reducir también Z. 
+            */
+            [0-cakeX-angleY*8, -2-cakeY-angleX*8, 0-cakeZ+8*Math.abs(angleY)+7.9*Math.abs(angleX)], 
+            [-angleZ, -1+Math.abs(angleZ), 0]);
         gl.uniformMatrix4fv(mViewUniformLoc, false, viewMatrix);
 
         //mat4.rotate(worldMatrix, identityMatrix, period, [0, 1, 0]);
